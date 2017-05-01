@@ -30,8 +30,8 @@ def draw_corners(img,nxy=(9,6),gray_img=[]):
     cv2.drawChessboardCorners(img,nxy,corners,ret)
     return ret
 
-def calibrate(imgs_dir,imgs_ext,nxy):
-    cal_paths = inout.read_paths(imgs_dir,imgs_ext)
+def calibrate(imgs_dir,nxy):
+    cal_paths = inout.read_paths(imgs_dir)
     img_pts = []
     obj_pts = []
     objp = make_objpts(nxy) # locations for transform
@@ -57,9 +57,9 @@ def undistort(img,calibrators):
                         None,
                         calibrators[1])
 
-def get_transform(img, nxy, calibrators, offset):
+def get_chess_transform(img, nxy, calibrators, offset):
     dst = undistort(img,calibrators)
-    dst_gray = cv2.cvtColor(dst, cv2.COLOR_BGR2GRAY)
+    dst_gray = cv2.cvtColor(dst, cv2.COLOR_RGB2GRAY)
     ret, corners = cv2.findChessboardCorners(dst_gray,nxy,None)
     if ret:
         x,y = nxy
@@ -79,6 +79,16 @@ def get_transform(img, nxy, calibrators, offset):
         M_rev = cv2.getPerspectiveTransform(dst_pts,src_pts)
         return M, M_rev
     return None, None
+
+def get_transform(src_pts, img_size, offset=(250,0)):
+    xoff,yoff = offset
+    dst_pts = np.float32([[xoff, img_size[0]-yoff],
+                        [xoff, yoff],
+                        [img_size[1]-xoff, yoff],
+                        [img_size[1]-xoff, img_size[0]-yoff]])
+    M = cv2.getPerspectiveTransform(src_pts,dst_pts)
+    M_rev = cv2.getPerspectiveTransform(dst_pts,src_pts)
+    return M, M_rev
 
 def change_persp(img,M):
     warped = cv2.warpPerspective(img,M,
