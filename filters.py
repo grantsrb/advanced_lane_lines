@@ -4,6 +4,14 @@ import matplotlib.pyplot as plt
 import cv2
 
 def abs_grad(img, orient='x', sobel_kernel=3, thresh=(20,100), sat_img=[]):
+    # ** Returns absolute value of pixel gradients in specified direction on image **
+
+    # img - numpy array to detect pixel gradients off of
+    # orient - direction of gradient calculations ('x' or 'y')
+    # sobel_kernel - int of kernel size for sobel operation
+    # thesh - tuple of lower gradient threshold and upper gradient threshold
+    # sat_img - numpy array of saturation values for image. Used to speed calculations
+
     if len(sat_img) == 0:
         sat_img = get_saturation(img)
 
@@ -18,6 +26,13 @@ def abs_grad(img, orient='x', sobel_kernel=3, thresh=(20,100), sat_img=[]):
     return binary
 
 def mag_grad(img, sobel_kernel=3,thresh=(100,255), sat_img=[]):
+    # ** Returns combined magnitude of pixel gradients in both x and y directions on image **
+
+    # img - numpy array to detect pixel gradients off of
+    # sobel_kernel - int of kernel size for sobel operation
+    # thesh - tuple of lower gradient threshold and upper gradient threshold
+    # sat_img - numpy array of saturation values for image. Used to speed calculations
+
     if len(sat_img) == 0:
         sat_img = get_saturation(img)
 
@@ -32,6 +47,13 @@ def mag_grad(img, sobel_kernel=3,thresh=(100,255), sat_img=[]):
     return binary
 
 def dir_grad(img, sobel_kernel=3, thresh=(0,np.pi/2), sat_img=[]):
+    # ** Returns angled pixel gradients on image **
+
+    # img - numpy array to detect pixel gradients off of
+    # sobel_kernel - int of kernel size for sobel operation
+    # thesh - tuple of lower gradient threshold and upper gradient threshold
+    # sat_img - numpy array of saturation values for image. Used to speed calculations
+
     if len(sat_img) == 0:
         sat_img = get_saturation(img)
 
@@ -45,10 +67,19 @@ def dir_grad(img, sobel_kernel=3, thresh=(0,np.pi/2), sat_img=[]):
     return binary
 
 def get_saturation(img):
+    # ** Returns saturation pixel values from given image **
+    # img - numpy array of pixels
     hls = cv2.cvtColor(img,cv2.COLOR_RGB2HLS)
     return hls[:,:,2]
 
 def filter(img, saturate=True, abs_thresh=(10,100), mag_thresh=(35,100)):
+    # Returns binary pixels after combining abs_grad(), mag_grad(), and get_saturation() filters **
+
+    # img - numpy array of pixels
+    # saturate - optional boolean to run saturation transform
+    # abs_thresh - tuple of thresholds for abs_thresh()
+    # mag_thresh - tuple of thresholds for mag_thresh()
+    
     if saturate:
         sat_img = get_saturation(img)
     else:
