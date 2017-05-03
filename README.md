@@ -6,6 +6,8 @@
 
 **Advanced Lane Finding Project**
 
+This was a project completed for Udacity's Self Driving Car Engineer nano degree.
+
 The goals / steps of this project were the following:
 
 * Compute a camera calibration matrix and distortion coefficients given using a set of chessboard images.
@@ -29,17 +31,10 @@ The goals / steps of this project were the following:
 [image6]: ./output_images/overlayed.jpg "Output"
 [video1]: ./processed_project_video.mp4 "Video"
 
-## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
 
-### The following will detail how this project addressed each rubric point.
+### This README addresses each point on the [project rubric](https://review.udacity.com/#!/rubrics/571/view)
 
 ---
-
-### Writeup / README
-
-#### 1. Provide a Writeup / README that includes all the rubric points and how you addressed each one.
-
-This is it!
 
 ### Camera Calibration
 
@@ -47,9 +42,11 @@ This is it!
 
 The code for this step is split between the [calibration](./calibration.py) python file and the 3rd and 4th cells of the [IPython notebook](./advanced_lane_finder.ipynb).  
 
-I started by preparing "object points", which are the (x, y, z) coordinates of the chessboard corners in space. I assume the chessboard is fixed on the (x, y) plane at z=0, such that the object points are the same for each calibration image.  Thus, `objp` is just a replicated array of coordinates, and `objpoints` will be appended with a copy of it every time the chessboard corners are successfully detected in a test image.  `imgpoints` are a list of the (x, y) pixel positions of each of the corners in the image plane from each successful chessboard detection.
+I started by preparing "object points", which are the (x, y, z) coordinates of the chessboard corners in space. I assumed the chessboard was fixed on the (x, y) plane at z=0, such that the object points are the same for each calibration image.
 
-I then used the output `objpoints` and `imgpoints` to compute the camera calibration and distortion coefficients using the `cv2.calibrateCamera()` function.  Using the distortion coefficients and the `cv2.undistort()` function images could be undistorted:
+Referring to the code, `objp` is just a replicated array of coordinates, and `objpoints` were appended with a copy of `objp` every time the chessboard corners were successfully detected in a test image.  `imgpoints` are a list of the (x, y) pixel positions of each of the corners in the image plane from each successful chessboard detection.
+
+I then used the output `objpoints` and `imgpoints` to compute the camera calibration and distortion coefficients using the `cv2.calibrateCamera()` function. These coefficients could then be used with the `cv2.undistort()` function to undistort images.
 
 ![alt text][image1]
 
@@ -58,24 +55,26 @@ I then used the output `objpoints` and `imgpoints` to compute the camera calibra
 
 #### 1. Provide an example of a distortion-corrected image.
 
-The following is an image with distortion correction. The correction is not very noticeable.
+The following is an image with distortion correction. The correction is not very noticeable, but there all the same.
 ![alt text][image1b]
 
 #### 2. Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
 
-I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at lines 51 through 61 in `filters.py`).  Here's an example of my output for this step.
+I first converted the images to HLS and isolated the saturation because this gave the best lane image.
 
 Converted to HLS and take only saturation.
 ![alt text][image3]
+
+I then used sobel gradient detection in the x direction, a combined sobel gradient in multiple directions, and the original saturation pixels to generate a binary image (thresholding steps at lines 51 through 61 in `filters.py`).  Here's an example of my output for this step.
 
 Multiple gradient thresholding techniques.
 ![alt text][image3]
 
 #### 3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
 
-The code for my perspective transform includes a function called `change_persp()`, which is defined in lines 89 through 93 in the file `calibration.py` and used for the first time in the 5th code cell of the [IPython](./advanced_lane_finder.ipynb) notebook.  The `change_persp()` function takes as inputs an image and a transform matrix.
+The code for my perspective transform includes a function called `change_persp()`, which is defined in lines 89 through 93 in the file `calibration.py`. It is used for the first time in the 5th code cell of the [IPython](./advanced_lane_finder.ipynb) notebook. The `change_persp()` function takes in an image and a transform matrix and returns a bird's eye view of the lane.
 
-The transform matrix is calculated from the function `get_transform` defined in lines 79-87 also in `calibration.py`. I chose the hardcode the source points for calculating the transform matrix, but the destination points are based off of the optional parameter `offset`. They are defined in the following manner:
+The transform matrix used in `change_persp()` is calculated from the function `get_transform` defined in lines 79-87 in `calibration.py`. I chose the hardcode the source points for calculating the transform matrix, but the destination points are based off of the optional parameter `offset`. They are defined in the following manner:
 
 ```python
 src_pts = np.float32([[277,680],[555,475],[727,474],[1049,680]])
@@ -94,7 +93,7 @@ Here is an example of the perspective transform:
 
 #### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
 
-My approach to fitting a polynomial to the lane lines was heavily inspired by the Udacity approach. The first step was to isolate the most likely location for the base of each lane line. I did this by counting the non-zero pixels in each column of the image up to halfway up the image. The columns with largest counts had the greatest chance of being the columns centered on the lane lines. See lines 18-25,33 in [lanes](./lanes.py) for this step.
+The first step to fitting a polynomial to the lane lines was to isolate the most likely location for the base of each lane line. I did this by counting the non-zero pixels in each column of the image up to halfway up the image. The columns with largest counts had the greatest chance of being the columns centered on the lane lines. See lines 18-25,33 in [lanes](./lanes.py) for this step.
 
 The next step was to create boxes (or windows) for each lane and slide them up along the lane's main column picked by the histogram. The pixels within the windowed regions were then kept and used to fit a polynomial to the lanes (lines 36-102 in [lanes](./lanes.py)). The space between the two fitted polynomials was then filled with color and transformed back to its original orientation.
 
@@ -138,8 +137,10 @@ Here's a [link to my video result](./project_video.mp4)
 
 #### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-I experienced problems with calculating the curvature of the lanes with precision. The curvature for the right vs left lanes were often calculated to be drastically different. This is obviously incorrect since the lanes are often parallel and relatively straight. The lack of precision could be improved by keeping a running average of past curvature measurements in addition to averaging the two separate lane curvature measurements. This could be further improved by measuring the confidence of the fitted lane lines and giving greater weight in the averages to high confidence measurements.
+At one point on my first run through on the project video, the right lane line polynomial would drift over to the left lane and stay there. In order to fix this, I would recalculate the lane line polynomials from scratch if the update polynomials ever drifted across the mid line of the image (see lines 125-130 of `lanes.py`). This fixed the problem.
 
-The challenge videos went poorly. They could be improved by measuring confidence of polynomial fit and using the weighted average of the two polynomials. The center lane line is more consistent than the right which could be used to our advantage. The fitting could further be improved by enforcing the lane distance between the two fitted polynomials. This would ensure the lane width remains constant. The perspective transform could also be tuned to focus on lane closer to the car. Fitting could perhaps further be improved with more tuned filter parameters.
+I experienced problems with calculating the curvature of the lanes with a good degree of precision. The curvature for the right vs left lanes often had drastically different values. This is obviously incorrect since the lanes are often parallel and relatively straight. The lack of precision could be improved by including a running average of past curvature measurements in the calculations. It may also be helpful to combine and take the average of the two separate lane curvature measurements since the difference between them should only ever be about 3.7m. Both of these ideas could be further improved by measuring the confidence of the fitted lane lines and giving greater weight in the averages to high confidence measurements. The confidence could be measured by pixel counts when finding the lane lines.
 
-The most interesting improvement would be to use a convolutional neural net to fit the lanes. I believe it would be doable but could require a significant amount of hand labeling. It would likely require a bit more data, too. Although data augmentation goes a long way.
+The challenge videos went poorly. They could be improved by measuring confidence of polynomial fit forcing conformity to more confident measurements. In the harder video, the center lane line is more consistent than the right which could be used to base most measurements off. The lane fitting could be improved by enforcing the lane distance between the two fitted polynomials. This would ensure the lane width remains constant. Fitting could also perhaps further be improved with more tuned filter parameters.
+
+An interesting approach would be to use a convolutional neural net to fit the lanes. I believe it would be doable but could require a significant amount of hand labeling. It would likely require a bit more data, too. Although data augmentation goes a long way.
