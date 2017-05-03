@@ -157,7 +157,7 @@ def fill_lane(img, l_nzlane_rowcols, r_nzlane_rowcols, margin=5, params=False):
     left_fit_col = left_fit_col.astype('int32')
     right_fit_col = right_fit_col.astype('int32')
     for i in range(len(img)):
-        copy[i,left_fit_col[i].astype('int32'):right_fit_col[i].astype('int32')] = [0,255,0]
+        copy[i,left_fit_col[i].astype('int32'):right_fit_col[i].astype('int32')] = [0,255,100]
         copy[i,left_fit_col[i]-margin:left_fit_col[i]+margin] = [0,0,255]
         copy[i,right_fit_col[i]-margin:right_fit_col[i]+margin] = [0,0,255]
     if params: return copy, (lparams, rparams)
