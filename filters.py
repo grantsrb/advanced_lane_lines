@@ -48,11 +48,14 @@ def get_saturation(img):
     hls = cv2.cvtColor(img,cv2.COLOR_RGB2HLS)
     return hls[:,:,2]
 
-def filter(img):
-    sat_img = get_saturation(img)
-    a = abs_grad(img,'x',3,(20,100),sat_img=sat_img)
-    b = mag_grad(img,sobel_kernel=9, thresh=(30, 100),sat_img=sat_img)
-    c = dir_grad(img,thresh=(.79,3*np.pi/8-.08),sat_img=sat_img)
-    d = a+b+c+sat_img/np.max(sat_img)
+def filter(img, saturate=True, abs_thresh=(10,100), mag_thresh=(35,100)):
+    if saturate:
+        sat_img = get_saturation(img)
+    else:
+        sat_img = img
+    a = abs_grad(img,'x',3,abs_thresh,sat_img=sat_img)
+    b = mag_grad(img,sobel_kernel=9, thresh=mag_thresh,sat_img=sat_img)
+    d = a+b+sat_img/np.max(sat_img)
     d[d <= 1] = 0
+    d[d.nonzero()] = 1
     return d
