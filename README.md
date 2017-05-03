@@ -65,16 +65,16 @@ I first converted the images to HLS and isolated the saturation because this gav
 Converted to HLS and take only saturation.
 ![alt text][image3]
 
-I then used sobel gradient detection in the x direction, a combined sobel gradient in multiple directions, and the original saturation pixels to generate a binary image (thresholding steps at lines 51 through 61 in `filters.py`).  Here's an example of my output for this step.
+I then used sobel gradient detection in the x direction, a combined sobel gradient in multiple directions, and the original saturation pixels to generate a binary image (thresholding steps at lines 83 through 92 in `filters.py`).  Here's an example of my output for this step.
 
 Multiple gradient thresholding techniques.
 ![alt text][image3]
 
 #### 3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
 
-The code for my perspective transform includes a function called `change_persp()`, which is defined in lines 89 through 93 in the file `calibration.py`. It is used for the first time in the 5th code cell of the [IPython](./advanced_lane_finder.ipynb) notebook. The `change_persp()` function takes in an image and a transform matrix and returns a bird's eye view of the lane.
+The code for my perspective transform includes a function called `change_persp()`, which is defined in lines 127 through 130 in the file `calibration.py`. It is used for the first time in the 5th code cell of the [IPython](./advanced_lane_finder.ipynb) notebook. The `change_persp()` function takes in an image and a transform matrix and returns a bird's eye view of the lane.
 
-The transform matrix used in `change_persp()` is calculated from the function `get_transform` defined in lines 79-87 in `calibration.py`. I chose the hardcode the source points for calculating the transform matrix, but the destination points are based off of the optional parameter `offset`. They are defined in the following manner:
+The transform matrix used in `change_persp()` is calculated from the function `get_transform` defined in lines 104-119 in `calibration.py`. I chose the hardcode the source points for calculating the transform matrix, but the destination points are based off of the optional parameter `offset`. They are defined in the following manner:
 
 ```python
 src_pts = np.float32([[277,680],[555,475],[727,474],[1049,680]])
@@ -93,9 +93,9 @@ Here is an example of the perspective transform:
 
 #### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
 
-The first step to fitting a polynomial to the lane lines was to isolate the most likely location for the base of each lane line. I did this by counting the non-zero pixels in each column of the image up to halfway up the image. The columns with largest counts had the greatest chance of being the columns centered on the lane lines. See lines 18-25,33 in [lanes](./lanes.py) for this step.
+The first step to fitting a polynomial to the lane lines was to isolate the most likely location for the base of each lane line. I did this by counting the non-zero pixels in each column of the image up to halfway up the image. The columns with largest counts had the greatest chance of being the columns centered on the lane lines. See `find_start_cols()` defined in lines 29-40 in [lanes](./lanes.py) for this step.
 
-The next step was to create boxes (or windows) for each lane and slide them up along the lane's main column picked by the histogram. The pixels within the windowed regions were then kept and used to fit a polynomial to the lanes (lines 36-102 in [lanes](./lanes.py)). The space between the two fitted polynomials was then filled with color and transformed back to its original orientation.
+The next step was to create boxes (or windows) for each lane and slide them up along the lane's main column picked by the histogram. The pixels within the windowed regions were then kept and used to fit a polynomial to the lanes (uses functions `find_lane_pixels()` and `fit_poly()` defined in lines 42-233 in [lanes](./lanes.py)). The space between the two fitted polynomials was then filled with color and transformed back to its original orientation using `fill_lane()` at lines 209-227 in `lanes.py` followed by `change_persp()` in calibration.
 
 ![alt text][image5]
 
@@ -113,13 +113,13 @@ f' = 2ø<sub>1</sub>x + ø<sub>2</sub>
 
 f'' = 2ø<sub>1</sub>
 
-Where each ø is a fitted parameter for the polynomial. At this point, it was easy to plug and chug to find the radial curvature in terms of pixels. The units of measurement were then converted from pixels to meters. The conversion for the lane is found from the actual width of the lane in the US of 3.7m divided by the width of the lane in pixels, 775px. See [curve_radius](./lanes.py) (lines 135-146 in `lanes.py`) for implementation details.
+Where each ø is a fitted parameter for the polynomial. At this point, it was easy to plug and chug to find the radial curvature in terms of pixels. The units of measurement were then converted from pixels to meters. The conversion for the lane is found from the actual width of the lane in the US of 3.7m divided by the width of the lane in pixels, 775px. See [curve_radius](./lanes.py) (lines 180-196 in `lanes.py`) for implementation details.
 
-The distance of the lanes from the car were found by assuming the car is located in the center of the image and finding the average of the difference in pixel location of the fitted lane lines from the center of the image. The result was then converted to meters from pixels. See lines 148 to 150 in `lanes.py`.
+The distance of the lanes from the car were found by assuming the car is located in the center of the image and finding the average of the difference in pixel location of the fitted lane lines from the center of the image. The result was then converted to meters from pixels. See `car_location()` defined at lines 198-206 in `lanes.py`.
 
 #### 6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
 
-I implemented this step in code cell 8 in `advanced_lane_finder.ipynb` using the functions `fill_lane()`, `change_persp()`, and `overlay()` found in lines 153-164 and 185-186 in [lanes.py](./lanes.py).  Here is an example of my result on a test image:
+I implemented this step in code cell 8 in `advanced_lane_finder.ipynb` using the functions `fill_lane()`, `change_persp()`, and `overlay()` (found in lines 260-268 in `lanes.py`).  Here is an example of my result on a test image:
 
 ![alt text][image6]
 
