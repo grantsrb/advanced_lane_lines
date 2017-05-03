@@ -5,10 +5,6 @@ import matplotlib.image as mpimg
 
 import inout
 
-def show(img):
-    plt.imshow(img)
-    plt.show()
-
 def get_imgpts(img,nxy,img_pts):
     gray_img = cv2.cvtColor(img,cv2.COLOR_RGB2GRAY)
     ret,corners = cv2.findChessboardCorners(gray_img,nxy,None)
@@ -80,11 +76,11 @@ def get_chess_transform(img, nxy, calibrators, offset):
         return M, M_rev
     return None, None
 
-def get_transform(src_pts, img_size, offset=(250,0)):
+def get_transform(src_pts, img_size, offset=(250,0),top_offset=20):
     xoff,yoff = offset
     dst_pts = np.float32([[xoff, img_size[0]-yoff],
-                        [xoff, yoff],
-                        [img_size[1]-xoff, yoff],
+                        [xoff, yoff+top_offset],
+                        [img_size[1]-xoff, yoff+top_offset],
                         [img_size[1]-xoff, img_size[0]-yoff]])
     M = cv2.getPerspectiveTransform(src_pts,dst_pts)
     M_rev = cv2.getPerspectiveTransform(dst_pts,src_pts)
